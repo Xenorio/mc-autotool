@@ -18,7 +18,7 @@ import net.minecraft.world.World
 
 class Autotool(select: Select) : AttackBlockCallback, AttackEntityCallback, EndTick {
     var last = -1
-    var select = select
+    val select = select
 
     fun register() {
         AttackBlockCallback.EVENT.register(this)
@@ -36,8 +36,8 @@ class Autotool(select: Select) : AttackBlockCallback, AttackEntityCallback, EndT
         if (!Util.isCurrentPlayer(p)) return ActionResult.PASS
         if (h != Hand.MAIN_HAND) return ActionResult.PASS
         if (last == -1) last = p.getInventory().selectedSlot
-        var bState = w.getBlockState(bp)
-        var tool = select.selectTool(p.getInventory(), bState)
+        val bState = w.getBlockState(bp)
+        val tool = select.selectTool(p.getInventory(), bState)
         if (tool == -1 || p.getInventory().selectedSlot == tool) return ActionResult.PASS
         updateServer(tool)
         return ActionResult.PASS
@@ -53,7 +53,7 @@ class Autotool(select: Select) : AttackBlockCallback, AttackEntityCallback, EndT
         if (!Util.isCurrentPlayer(p)) return ActionResult.PASS
         if (h != Hand.MAIN_HAND) return ActionResult.PASS
         if (last == -1) last = p.getInventory().selectedSlot
-        var sword = select.selectWeapon(p.getInventory())
+        val sword = select.selectWeapon(p.getInventory())
         if (sword == -1 || p.getInventory().selectedSlot == sword) return ActionResult.PASS
         last = sword
         updateServer(sword)
@@ -61,7 +61,7 @@ class Autotool(select: Select) : AttackBlockCallback, AttackEntityCallback, EndT
     }
 
     override fun onEndTick(c: MinecraftClient) {
-        var p = c.player
+        val p = c.player
         if (p == null || c.crosshairTarget == null || p.getInventory() == null) return
         if (!Util.isCurrentPlayer(p)) return
         updateLast(p.getInventory(), c.mouse.wasLeftButtonClicked())
@@ -77,8 +77,8 @@ class Autotool(select: Select) : AttackBlockCallback, AttackEntityCallback, EndT
     }
 
     fun updateServer(pos: Int) {
-        var instance = MinecraftClient.getInstance()
-        var p = instance.player
+        val instance = MinecraftClient.getInstance()
+        val p = instance.player
         if (p == null) return
         p.getInventory().selectedSlot = pos
         if (p.networkHandler == null) return

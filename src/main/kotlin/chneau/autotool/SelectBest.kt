@@ -11,11 +11,11 @@ class SelectBest : Select {
     override fun selectTool(inventory: PlayerInventory, bState: BlockState): Int {
         var bestSpeed = 1f
         var bestIndex = -1
-        var targetItem = bState.getBlock().asItem()
-        var itemStack = ItemStack(targetItem)
+        val targetItem = bState.getBlock().asItem()
+        val itemStack = ItemStack(targetItem)
         for (i in 0..Select.HOTBAR_SIZE) {
-            var item = inventory.main.get(i).getItem()
-            var speed = item.getMiningSpeedMultiplier(itemStack, bState)
+            val item = inventory.main.get(i).getItem()
+            val speed = item.getMiningSpeedMultiplier(itemStack, bState)
             if (bestSpeed < speed) {
                 bestSpeed = speed
                 bestIndex = i
@@ -28,19 +28,13 @@ class SelectBest : Select {
         var bestDPS = 4.0
         var bestIndex = -1
         for (i in 0..Select.HOTBAR_SIZE) {
-            var item = inventory.main.get(i).getItem()
-            var mm = item.getAttributeModifiers(EquipmentSlot.MAINHAND)
-            var atkDmg =
-                    1 +
-                            mm.get(EntityAttributes.GENERIC_ATTACK_DAMAGE)
-                                    .map({ x -> x.getValue() })
-                                    .sum()
-            var atkSpd =
-                    4 +
-                            mm.get(EntityAttributes.GENERIC_ATTACK_SPEED)
-                                    .map({ x -> x.getValue() })
-                                    .sum()
-            var dps = atkDmg * atkSpd
+            val item = inventory.main.get(i).getItem()
+            val mm = item.getAttributeModifiers(EquipmentSlot.MAINHAND)
+            val atkDmgObj = mm.get(EntityAttributes.GENERIC_ATTACK_DAMAGE)
+            val atkDmg = 1 + atkDmgObj.map({ x -> x.getValue() }).sum()
+            val atkSpdObj = mm.get(EntityAttributes.GENERIC_ATTACK_SPEED)
+            val atkSpd = 4 + atkSpdObj.map({ x -> x.getValue() }).sum()
+            val dps = atkDmg * atkSpd
             if (bestDPS < dps) {
                 bestDPS = dps
                 bestIndex = i

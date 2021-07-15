@@ -23,19 +23,19 @@ class Autofarm : EndTick {
     }
 
     override fun onEndTick(c: MinecraftClient) {
-        var p = c.player
+        val p = c.player
         if (p == null || c.crosshairTarget == null || p.getInventory() == null) return
         if (!Util.isCurrentPlayer(p)) return
-        var inventory = p.getInventory()
-        var itemMainHand = inventory.main.get(inventory.selectedSlot).getItem()
+        val inventory = p.getInventory()
+        val itemMainHand = inventory.main.get(inventory.selectedSlot).getItem()
         if (c.crosshairTarget!!.getType() == Type.BLOCK) {
-            var isSeed = itemMainHand is AliasedBlockItem
-            var isTool = itemMainHand is MiningToolItem
+            val isSeed = itemMainHand is AliasedBlockItem
+            val isTool = itemMainHand is MiningToolItem
             if (!(isSeed || isTool)) return
-            var networkHandler = c.getNetworkHandler()
+            val networkHandler = c.getNetworkHandler()
             if (networkHandler == null) return
-            var blockPos = Util.getTargetedBlock(c)
-            var bhr = c.crosshairTarget as BlockHitResult
+            val blockPos = Util.getTargetedBlock(c)
+            val bhr = c.crosshairTarget as BlockHitResult
             harvest(c, networkHandler, blockPos, bhr)
             harvest(c, networkHandler, blockPos.east(), bhr)
             harvest(c, networkHandler, blockPos.east().north(), bhr)
@@ -76,9 +76,9 @@ class Autofarm : EndTick {
             blockPos: BlockPos,
             bhr: BlockHitResult
     ) {
-        var above = c.world!!.getBlockState(blockPos.up()).getBlock()
+        val above = c.world!!.getBlockState(blockPos.up()).getBlock()
         if (!(above.equals(Blocks.AIR) || checkBlockIsHarvestable(c, blockPos.up()))) return
-        var block = c.world!!.getBlockState(blockPos).getBlock()
+        val block = c.world!!.getBlockState(blockPos).getBlock()
         if (!(block.equals(Blocks.FARMLAND) || block.equals(Blocks.SOUL_SAND))) return
         networkHandler.sendPacket(
                 PlayerInteractBlockC2SPacket(
@@ -105,10 +105,10 @@ class Autofarm : EndTick {
     }
 
     fun checkBlockIsHarvestable(c: MinecraftClient, blockPos: BlockPos): Boolean {
-        var state = c.world!!.getBlockState(blockPos)
-        var block = state.getBlock()
-        var maxAge: Int
-        var age: Int
+        val state = c.world!!.getBlockState(blockPos)
+        val block = state.getBlock()
+        val maxAge: Int
+        val age: Int
         if (block is NetherWartBlock) {
             maxAge = 3
             age = state.get(NetherWartBlock.AGE)

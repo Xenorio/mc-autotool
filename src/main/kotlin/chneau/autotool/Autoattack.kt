@@ -16,13 +16,13 @@ class Autoattack : EndTick {
     }
 
     override fun onEndTick(c: MinecraftClient) {
-        var p = c.player
+        val p = c.player
         if (p == null || c.crosshairTarget == null || p.getInventory() == null) return
         if (!Util.isCurrentPlayer(p)) return
-        var itemMainHand = p.getInventory().main.get(p.getInventory().selectedSlot).getItem()
+        val itemMainHand = p.getInventory().main.get(p.getInventory().selectedSlot).getItem()
         if (c.crosshairTarget!!.getType() == Type.ENTITY) {
             if (itemMainHand !is SwordItem) return
-            var now = System.currentTimeMillis()
+            val now = System.currentTimeMillis()
             if (now - lastAttack < 625) return
             c.interactionManager!!.attackEntity(
                     p,

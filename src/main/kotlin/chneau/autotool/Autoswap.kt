@@ -16,9 +16,9 @@ class Autoswap : UseBlockCallback {
     override fun interact(p: PlayerEntity, w: World, h: Hand, bhr: BlockHitResult): ActionResult {
         if (!Util.isCurrentPlayer(p)) return ActionResult.PASS
         if (h != Hand.MAIN_HAND) return ActionResult.PASS
-        var itemStack = p.getInventory().main.get(p.getInventory().selectedSlot)
-        var maxCount = itemStack.getMaxCount()
-        var count = itemStack.getCount()
+        val itemStack = p.getInventory().main.get(p.getInventory().selectedSlot)
+        val maxCount = itemStack.getMaxCount()
+        val count = itemStack.getCount()
         if (count == maxCount) return ActionResult.PASS
         p.getInventory().removeStack(1, 2)
         return ActionResult.PASS
