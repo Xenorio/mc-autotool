@@ -8,7 +8,7 @@ interface Select {
         val HOTBAR_SIZE: Int = PlayerInventory.getHotbarSize()
     }
 
-    fun selectTool(inventory: PlayerInventory, bState: BlockState): Int
+    fun selectTool(inventory: PlayerInventory, blockState: BlockState): Int
 
     fun selectWeapon(inventory: PlayerInventory): Int
 }

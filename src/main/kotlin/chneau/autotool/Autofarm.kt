@@ -22,101 +22,95 @@ class Autofarm : EndTick {
         ClientTickEvents.END_CLIENT_TICK.register(this)
     }
 
-    override fun onEndTick(c: MinecraftClient) {
-        val p = c.player
-        if (p == null || c.crosshairTarget == null || p.getInventory() == null) return
-        if (!Util.isCurrentPlayer(p)) return
-        val inventory = p.getInventory()
-        val itemMainHand = inventory.main.get(inventory.selectedSlot).getItem()
-        if (c.crosshairTarget!!.getType() == Type.BLOCK) {
+    override fun onEndTick(client: MinecraftClient) {
+        val player = client.player
+        if (player == null) return
+        if (client.crosshairTarget == null || player.inventory == null) return
+        if (!Util.isCurrentPlayer(player)) return
+        val inventory = player.inventory
+        val itemMainHand = inventory.main.get(inventory.selectedSlot).item
+        if (client.crosshairTarget?.type == Type.BLOCK) {
             val isSeed = itemMainHand is AliasedBlockItem
             val isTool = itemMainHand is MiningToolItem
             if (!(isSeed || isTool)) return
-            val networkHandler = c.getNetworkHandler()
+            val networkHandler = client.getNetworkHandler()
             if (networkHandler == null) return
-            val blockPos = Util.getTargetedBlock(c)
-            val bhr = c.crosshairTarget as BlockHitResult
-            harvest(c, networkHandler, blockPos, bhr)
-            harvest(c, networkHandler, blockPos.east(), bhr)
-            harvest(c, networkHandler, blockPos.east().north(), bhr)
-            harvest(c, networkHandler, blockPos.west(), bhr)
-            harvest(c, networkHandler, blockPos.west().south(), bhr)
-            harvest(c, networkHandler, blockPos.south(), bhr)
-            harvest(c, networkHandler, blockPos.south().east(), bhr)
-            harvest(c, networkHandler, blockPos.north(), bhr)
-            harvest(c, networkHandler, blockPos.north().west(), bhr)
+            val blockPos = Util.getTargetedBlock(client)
+            val bhr = client.crosshairTarget as BlockHitResult
+            harvest(client, networkHandler, blockPos, bhr)
+            harvest(client, networkHandler, blockPos.east(), bhr)
+            harvest(client, networkHandler, blockPos.east().north(), bhr)
+            harvest(client, networkHandler, blockPos.west(), bhr)
+            harvest(client, networkHandler, blockPos.west().south(), bhr)
+            harvest(client, networkHandler, blockPos.south(), bhr)
+            harvest(client, networkHandler, blockPos.south().east(), bhr)
+            harvest(client, networkHandler, blockPos.north(), bhr)
+            harvest(client, networkHandler, blockPos.north().west(), bhr)
             if (isSeed) {
-                var bp = bhr.getBlockPos()
-                plant(c, networkHandler, bp, bhr)
-                plant(c, networkHandler, bp.east(), bhr)
-                plant(c, networkHandler, bp.east().north(), bhr)
-                plant(c, networkHandler, bp.west(), bhr)
-                plant(c, networkHandler, bp.west().south(), bhr)
-                plant(c, networkHandler, bp.south(), bhr)
-                plant(c, networkHandler, bp.south().east(), bhr)
-                plant(c, networkHandler, bp.north(), bhr)
-                plant(c, networkHandler, bp.north().west(), bhr)
+                var bp = bhr.blockPos
+                plant(client, networkHandler, bp, bhr)
+                plant(client, networkHandler, bp.east(), bhr)
+                plant(client, networkHandler, bp.east().north(), bhr)
+                plant(client, networkHandler, bp.west(), bhr)
+                plant(client, networkHandler, bp.west().south(), bhr)
+                plant(client, networkHandler, bp.south(), bhr)
+                plant(client, networkHandler, bp.south().east(), bhr)
+                plant(client, networkHandler, bp.north(), bhr)
+                plant(client, networkHandler, bp.north().west(), bhr)
                 bp = bp.down()
-                plant(c, networkHandler, bp, bhr)
-                plant(c, networkHandler, bp.east(), bhr)
-                plant(c, networkHandler, bp.east().north(), bhr)
-                plant(c, networkHandler, bp.west(), bhr)
-                plant(c, networkHandler, bp.west().south(), bhr)
-                plant(c, networkHandler, bp.south(), bhr)
-                plant(c, networkHandler, bp.south().east(), bhr)
-                plant(c, networkHandler, bp.north(), bhr)
-                plant(c, networkHandler, bp.north().west(), bhr)
+                plant(client, networkHandler, bp, bhr)
+                plant(client, networkHandler, bp.east(), bhr)
+                plant(client, networkHandler, bp.east().north(), bhr)
+                plant(client, networkHandler, bp.west(), bhr)
+                plant(client, networkHandler, bp.west().south(), bhr)
+                plant(client, networkHandler, bp.south(), bhr)
+                plant(client, networkHandler, bp.south().east(), bhr)
+                plant(client, networkHandler, bp.north(), bhr)
+                plant(client, networkHandler, bp.north().west(), bhr)
             }
         }
     }
 
     fun plant(
-            c: MinecraftClient,
+            client: MinecraftClient,
             networkHandler: ClientPlayNetworkHandler,
             blockPos: BlockPos,
             bhr: BlockHitResult
     ) {
-        val above = c.world!!.getBlockState(blockPos.up()).getBlock()
-        if (!(above.equals(Blocks.AIR) || checkBlockIsHarvestable(c, blockPos.up()))) return
-        val block = c.world!!.getBlockState(blockPos).getBlock()
+        var world = client.world
+        if (world == null) return
+        val above = world.getBlockState(blockPos.up()).block
+        if (!(above.equals(Blocks.AIR) || checkBlockIsHarvestable(client, blockPos.up()))) return
+        val block = world.getBlockState(blockPos).block
         if (!(block.equals(Blocks.FARMLAND) || block.equals(Blocks.SOUL_SAND))) return
-        networkHandler.sendPacket(
-                PlayerInteractBlockC2SPacket(
-                        Hand.MAIN_HAND,
-                        BlockHitResult(bhr.getPos(), bhr.getSide(), blockPos, bhr.isInsideBlock())
-                )
-        )
+        val blockHitResult = BlockHitResult(bhr.pos, bhr.side, blockPos, bhr.isInsideBlock())
+        networkHandler.sendPacket(PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, blockHitResult))
     }
 
     fun harvest(
-            c: MinecraftClient,
+            client: MinecraftClient,
             networkHandler: ClientPlayNetworkHandler,
             blockPos: BlockPos,
             bhr: BlockHitResult
     ) {
-        if (!checkBlockIsHarvestable(c, blockPos)) return
-        networkHandler.sendPacket(
-                PlayerActionC2SPacket(
-                        PlayerActionC2SPacket.Action.START_DESTROY_BLOCK,
-                        blockPos,
-                        bhr.getSide()
-                )
-        )
+        if (!checkBlockIsHarvestable(client, blockPos)) return
+        val action = PlayerActionC2SPacket.Action.START_DESTROY_BLOCK
+        networkHandler.sendPacket(PlayerActionC2SPacket(action, blockPos, bhr.side))
     }
 
-    fun checkBlockIsHarvestable(c: MinecraftClient, blockPos: BlockPos): Boolean {
-        val state = c.world!!.getBlockState(blockPos)
-        val block = state.getBlock()
+    fun checkBlockIsHarvestable(client: MinecraftClient, blockPos: BlockPos): Boolean {
+        val state = client.world!!.getBlockState(blockPos)
+        val block = state.block
         val maxAge: Int
         val age: Int
         if (block is NetherWartBlock) {
             maxAge = 3
             age = state.get(NetherWartBlock.AGE)
         } else if (block is CropBlock) {
-            maxAge = block.getMaxAge()
-            age = state.get(block.getAgeProperty())
+            maxAge = block.maxAge
+            age = state.get(block.ageProperty)
         } else return false
-        if (age != maxAge) return false
-        return true
+
+        return age == maxAge
     }
 }

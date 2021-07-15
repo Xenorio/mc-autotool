@@ -13,14 +13,19 @@ class Autoswap : UseBlockCallback {
         UseBlockCallback.EVENT.register(this)
     }
 
-    override fun interact(p: PlayerEntity, w: World, h: Hand, bhr: BlockHitResult): ActionResult {
-        if (!Util.isCurrentPlayer(p)) return ActionResult.PASS
-        if (h != Hand.MAIN_HAND) return ActionResult.PASS
-        val itemStack = p.getInventory().main.get(p.getInventory().selectedSlot)
-        val maxCount = itemStack.getMaxCount()
-        val count = itemStack.getCount()
+    override fun interact(
+            player: PlayerEntity,
+            world: World,
+            hand: Hand,
+            blockHitResult: BlockHitResult
+    ): ActionResult {
+        if (!Util.isCurrentPlayer(player)) return ActionResult.PASS
+        if (hand != Hand.MAIN_HAND) return ActionResult.PASS
+        val itemStack = player.inventory.main.get(player.inventory.selectedSlot)
+        val maxCount = itemStack.maxCount
+        val count = itemStack.count
         if (count == maxCount) return ActionResult.PASS
-        p.getInventory().removeStack(1, 2)
+        player.inventory.removeStack(1, 2)
         return ActionResult.PASS
     }
 }

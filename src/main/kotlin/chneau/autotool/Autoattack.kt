@@ -15,22 +15,22 @@ class Autoattack : EndTick {
         ClientTickEvents.END_CLIENT_TICK.register(this)
     }
 
-    override fun onEndTick(c: MinecraftClient) {
-        val p = c.player
-        if (p == null || c.crosshairTarget == null || p.getInventory() == null) return
-        if (!Util.isCurrentPlayer(p)) return
-        val itemMainHand = p.getInventory().main.get(p.getInventory().selectedSlot).getItem()
-        if (c.crosshairTarget!!.getType() == Type.ENTITY) {
-            if (itemMainHand !is SwordItem) return
-            val now = System.currentTimeMillis()
-            if (now - lastAttack < 625) return
-            c.interactionManager!!.attackEntity(
-                    p,
-                    (c.crosshairTarget as EntityHitResult).getEntity()
-            )
-            p.resetLastAttackedTicks()
-            p.swingHand(Hand.MAIN_HAND)
-            lastAttack = now
-        }
+    override fun onEndTick(client: MinecraftClient) {
+        val player = client.player
+        if (player == null) return
+        if (!Util.isCurrentPlayer(player)) return
+        val inventory = player.inventory
+        if (inventory == null) return
+        val target = client.crosshairTarget
+        if (target == null) return
+        val itemMainHand = inventory.main.get(inventory.selectedSlot).item
+        if (target.type != Type.ENTITY) return
+        if (itemMainHand !is SwordItem) return
+        val now = System.currentTimeMillis()
+        if (now - lastAttack < 625) return
+        client.interactionManager?.attackEntity(player, (target as EntityHitResult).entity)
+        player.resetLastAttackedTicks()
+        player.swingHand(Hand.MAIN_HAND)
+        lastAttack = now
     }
 }

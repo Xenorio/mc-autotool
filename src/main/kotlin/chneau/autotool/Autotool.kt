@@ -16,7 +16,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
 
-class Autotool(select: Select) : AttackBlockCallback, AttackEntityCallback, EndTick {
+class Autotool(select: Select = SelectBest()) : AttackBlockCallback, AttackEntityCallback, EndTick {
     var last = -1
     val select = select
 
@@ -27,61 +27,61 @@ class Autotool(select: Select) : AttackBlockCallback, AttackEntityCallback, EndT
     }
 
     override fun interact(
-            p: PlayerEntity,
-            w: World,
-            h: Hand,
-            bp: BlockPos,
-            d: Direction
+            player: PlayerEntity,
+            world: World,
+            hand: Hand,
+            blockPod: BlockPos,
+            direction: Direction
     ): ActionResult {
-        if (!Util.isCurrentPlayer(p)) return ActionResult.PASS
-        if (h != Hand.MAIN_HAND) return ActionResult.PASS
-        if (last == -1) last = p.getInventory().selectedSlot
-        val bState = w.getBlockState(bp)
-        val tool = select.selectTool(p.getInventory(), bState)
-        if (tool == -1 || p.getInventory().selectedSlot == tool) return ActionResult.PASS
+        if (!Util.isCurrentPlayer(player)) return ActionResult.PASS
+        if (hand != Hand.MAIN_HAND) return ActionResult.PASS
+        if (last == -1) last = player.inventory.selectedSlot
+        val bState = world.getBlockState(blockPod)
+        val tool = select.selectTool(player.inventory, bState)
+        if (tool == -1 || player.inventory.selectedSlot == tool) return ActionResult.PASS
         updateServer(tool)
         return ActionResult.PASS
     }
 
     override fun interact(
-            p: PlayerEntity,
-            w: World,
-            h: Hand,
+            player: PlayerEntity,
+            world: World,
+            hand: Hand,
             e: Entity,
             ehr: EntityHitResult?
     ): ActionResult {
-        if (!Util.isCurrentPlayer(p)) return ActionResult.PASS
-        if (h != Hand.MAIN_HAND) return ActionResult.PASS
-        if (last == -1) last = p.getInventory().selectedSlot
-        val sword = select.selectWeapon(p.getInventory())
-        if (sword == -1 || p.getInventory().selectedSlot == sword) return ActionResult.PASS
+        if (!Util.isCurrentPlayer(player)) return ActionResult.PASS
+        if (hand != Hand.MAIN_HAND) return ActionResult.PASS
+        if (last == -1) last = player.inventory.selectedSlot
+        val sword = select.selectWeapon(player.inventory)
+        if (sword == -1 || player.inventory.selectedSlot == sword) return ActionResult.PASS
         last = sword
         updateServer(sword)
         return ActionResult.PASS
     }
 
-    override fun onEndTick(c: MinecraftClient) {
-        val p = c.player
-        if (p == null || c.crosshairTarget == null || p.getInventory() == null) return
-        if (!Util.isCurrentPlayer(p)) return
-        updateLast(p.getInventory(), c.mouse.wasLeftButtonClicked())
+    override fun onEndTick(client: MinecraftClient) {
+        val player = client.player
+        if (player == null || client.crosshairTarget == null || player.inventory == null) return
+        if (!Util.isCurrentPlayer(player)) return
+        updateLast(player.inventory, client.mouse.wasLeftButtonClicked())
     }
 
-    fun updateLast(i: PlayerInventory, lbClicked: Boolean) {
-        if (lbClicked == false) {
+    fun updateLast(inventory: PlayerInventory, lbClicked: Boolean) {
+        if (lbClicked) {
+            if (last == -1) last = inventory.selectedSlot
+        } else {
             if (last != -1) updateServer(last)
             last = -1
-        } else {
-            if (last == -1) last = i.selectedSlot
         }
     }
 
     fun updateServer(pos: Int) {
         val instance = MinecraftClient.getInstance()
-        val p = instance.player
-        if (p == null) return
-        p.getInventory().selectedSlot = pos
-        if (p.networkHandler == null) return
-        p.networkHandler.sendPacket(UpdateSelectedSlotC2SPacket(pos))
+        val player = instance.player
+        if (player == null) return
+        player.inventory.selectedSlot = pos
+        if (player.networkHandler == null) return
+        player.networkHandler.sendPacket(UpdateSelectedSlotC2SPacket(pos))
     }
 }
